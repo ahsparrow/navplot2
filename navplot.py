@@ -26,7 +26,7 @@ USER = ''
 PASSWORD = ''
 
 # Map origin and scaling
-SOUTH = (50.2, -4.5, 6.0)
+SOUTH = (50.2, -5.0, 6.5)
 NORTH = (53.0, -6.0, 6.0)
 
 def navplot_cli():
