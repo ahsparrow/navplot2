@@ -1,0 +1,11 @@
+[Unit]
+Description="Get today's NOTAMs"
+After=network.target
+
+[Service]
+User=ukair
+Group=www-data
+WorkingDirectory=/home/ahs/src/navplot2
+EnvironmentFile=/home/ahs/src/navplot2/password
+ExecStart=/home/ahs/src/navplot2/today.sh venv $PASSWORD /var/ukair/media/notam
+
