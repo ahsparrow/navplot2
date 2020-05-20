@@ -110,16 +110,19 @@ def drawFirstPage(canvas, doc):
 
     map_data = doc.map_data
     for lin in map_data.splitlines():
-        if lin[0] != '#':
-            lon, lat = map(float, lin.split('\t'))
-            x, y = doc.latlon2xy(lat, lon)
-            if moveFlag:
-                path.moveTo(x, y)
-                moveFlag = False
-            else:
-                path.lineTo(x, y)
-        else:
+        try:
+            lon, lat = map(float, lin.split())
+        except:
             moveFlag = True
+            continue
+
+        x, y = doc.latlon2xy(lat, lon)
+        if moveFlag:
+            path.moveTo(x, y)
+            moveFlag = False
+        else:
+            path.lineTo(x, y)
+
     canvas.setStrokeColor(darkgray)
     canvas.drawPath(path)
 
