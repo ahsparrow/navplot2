@@ -67,7 +67,8 @@ class DocTemplate(SimpleDocTemplate):
         x = self.leftMargin+\
             (lon-self.lon0)*self.scale*math.cos(math.radians(lat))
         y = self.bottomMargin+self.bottomOffset+(lat-self.lat0)*self.scale
-        return x,y
+        # Reducing precision reduces output file size
+        return int(x*10)/10, int(y*10)/10
 
 #------------------------------------------------------------------------------
 # Draw front page (and map)
