@@ -17,15 +17,12 @@
 
 from datetime import datetime
 import re
-import sys
 
 from bs4 import BeautifulSoup
 import requests
 from pkg_resources import resource_filename
 
 from . import notamdoc
-
-COPYRIGHT_HOLDER = ''
 
 # Regex for the Q-line
 QGroupRe = re.compile(
