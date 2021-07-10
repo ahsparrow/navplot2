@@ -88,8 +88,8 @@ def drawFirstPage(canvas, doc):
     canvas.setFont('Helvetica', 10)
     canvas.drawString(doc.leftMargin, doc.bottomMargin,
                       "THIS IS AN UNOFFICAL BRIEFING. Use at your own risk.")
-    canvas.drawRightString(doc.pagesize[0] - doc.rightMargin, doc.bottomMargin,
-                           "Data \N{COPYRIGHT SIGN} NATS Ltd.")
+    #canvas.drawRightString(doc.pagesize[0] - doc.rightMargin, doc.bottomMargin,
+    #                       "Data \N{COPYRIGHT SIGN} NATS Ltd.")
 
     # Clipping rectangle for the map
     path = canvas.beginPath()

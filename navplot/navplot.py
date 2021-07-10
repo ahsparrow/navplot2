@@ -25,7 +25,7 @@ from pkg_resources import resource_filename
 
 from . import notamdoc
 
-COPYRIGHT_HOLDER = 'NATS Ltd'
+COPYRIGHT_HOLDER = ''
 
 # Regex for the Q-line
 QGroupRe = re.compile(
