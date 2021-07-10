@@ -85,16 +85,19 @@ def parse_notam_soup(soup):
 #-----------------------------------------------------------------------
 # Get NOTAMS from NATS website & make PDF document
 def navplot(filename, date, mapinfo):
+    # Navigation warning contingency breif
     r = requests.get("http://pibs.nats.co.uk/operational/pibs/pib3.shtml")
     soup = BeautifulSoup(r.text, features="lxml")
 
     notam_dict = parse_notam_soup(soup)
     notams = list(notam_dict.values())
 
-    # Get the header text (discarding non-ASCII characters)
-    #hdr = response.soup.find("div", {"id": "mainColContent"}).get_text()
-    #hdr_text = "\n".join([h.strip() for h in hdr.splitlines() if h.strip()])
-    hdr = "HEADER"
+    # Get header text
+    hdr = "UK AIS - CONTINGENCY BULLETIN\n"
+
+    validity = soup.find(id="body")\
+            .find(class_="header").find(string="VALIDITY (UTC):").parent
+    hdr += "".join(validity.text.splitlines())
 
     # Filter by date
     notams = [n for n in notams if date_filter(n, date)]
