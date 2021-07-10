@@ -83,21 +83,36 @@ def parse_notam_soup(soup):
     return notam_dict
 
 #-----------------------------------------------------------------------
-# Get NOTAMS from NATS website & make PDF document
-def navplot(filename, date, mapinfo):
-    # Navigation warning contingency breif
+# Filter by date
+def date_filter(notam, date):
+    if date < notam['from'].date():
+        return False
+    elif 'to' not in notam:
+        return True
+    else:
+        return date <= notam['to'].date()
+
+#-----------------------------------------------------------------------
+# Get data from contingency bulletin website
+def get_notams():
+    # Navigation warning contingency bulletin
     r = requests.get("http://pibs.nats.co.uk/operational/pibs/pib3.shtml")
     soup = BeautifulSoup(r.text, features="lxml")
 
-    notam_dict = parse_notam_soup(soup)
-    notams = list(notam_dict.values())
+    return soup
 
-    # Get header text
+#-----------------------------------------------------------------------
+# Create NOTAM briefing
+def make_briefing(filename, soup, date, map_extent):
+    # Get validity string
     hdr = "UK AIS - CONTINGENCY BULLETIN\n"
-
     validity = soup.find(id="body")\
             .find(class_="header").find(string="VALIDITY (UTC):").parent
     hdr += "".join(validity.text.splitlines())
+
+    # Get list of notams
+    notam_dict = parse_notam_soup(soup)
+    notams = list(notam_dict.values())
 
     # Filter by date
     notams = [n for n in notams if date_filter(n, date)]
@@ -107,14 +122,10 @@ def navplot(filename, date, mapinfo):
         mapdata = f.read()
 
     # Create PDF document
-    notamdoc.notamdoc(notams, hdr, date, filename, mapinfo, mapdata)
+    notamdoc.notamdoc(filename, notams, hdr, date, map_extent, mapdata)
 
 #-----------------------------------------------------------------------
-# Filter by date
-def date_filter(notam, date):
-    if date < notam['from'].date():
-        return False
-    elif 'to' not in notam:
-        return True
-    else:
-        return date <= notam['to'].date()
+# Get NOTAMS from NATS website & make PDF document
+def navplot(filename, date, map_extent):
+    notam_soup = get_notams()
+    make_briefing(filename, notam_soup, date, map_extent)

@@ -152,8 +152,8 @@ def drawFirstPage(canvas, doc):
 
 #------------------------------------------------------------------------------
 # Produce NOTAM document
-def format_doc(local_notams, area_notams, boring_notams, local_coords,
-               header, date, filename, mapinfo, mapdata):
+def format_doc(filename, local_notams, area_notams, boring_notams,
+               local_coords, header, date, mapinfo, mapdata):
 
     date_str = date.strftime('%a, %d %b %y')
 
@@ -221,7 +221,7 @@ def format_doc(local_notams, area_notams, boring_notams, local_coords,
     doc.build(story, onFirstPage=drawFirstPage)
 
 #------------------------------------------------------------------------------
-def notamdoc(notams, header, date, filename, mapinfo, mapdata):
+def notamdoc(filename, notams, header, date, mapinfo, mapdata):
     # Sort by latitude of area centre
     notams.sort(key=lambda x: int(x['qline']['centre'][:4]))
 
@@ -272,5 +272,5 @@ def notamdoc(notams, header, date, filename, mapinfo, mapdata):
         elif qc[1]=='W':
             boring_notams.append(notam_text)
 
-    format_doc(interesting_notams, area_notams, boring_notams,
-               interesting_coords, header, date, filename, mapinfo, mapdata)
+    format_doc(filename, interesting_notams, area_notams, boring_notams,
+               interesting_coords, header, date, mapinfo, mapdata)

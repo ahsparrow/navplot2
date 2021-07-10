@@ -15,4 +15,4 @@
 # You should have received a copy of the GNU General Public License
 # along with YAIXM.  If not, see <http://www.gnu.org/licenses/>.
 
-from .navplot import navplot
+from .navplot import navplot, get_notams, make_briefing
