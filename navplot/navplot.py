@@ -15,20 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with YAIXM.  If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
+from datetime import datetime
 import re
+import sys
 
-import mechanicalsoup
+from bs4 import BeautifulSoup
+import requests
 from pkg_resources import resource_filename
 
 from . import notamdoc
 
-LOGIN_URL = "http://www.nats-uk.ead-it.com/fwf-natsuk/public/user/account/login.faces"
-AREA_BRIEF_URL = "http://www.nats-uk.ead-it.com/fwf-natsuk/restricted/user/ino/brief_area.faces"
 COPYRIGHT_HOLDER = 'NATS Ltd'
 
 # Regex for the Q-line
-QGroupRe = re.compile(r'^Q\) '
+QGroupRe = re.compile(
     r'(?P<fir>[A-Z]+)/'
     r'(?P<qcode>Q[A-Z]+)/'
     r'(?P<traffic>[IV]+)/'
@@ -36,87 +36,85 @@ QGroupRe = re.compile(r'^Q\) '
     r'(?P<scope>[AEW]+)/'
     r'(?P<lower>\d+)/'
     r'(?P<upper>\d+)/'
-    r'(?P<centre>\d{4}[NS]\d{5}[EW])(?P<radius>\d{3})[ ]*')
+    r'(?P<centre>\d{4}[NS]\d{5}[EW])(?P<radius>\d{3})')
+
+ToRe = re.compile(r"^TO:\s*$")
+FromRe = re.compile(r"^FROM:\s*$")
+LowerRe = re.compile(r"^LOWER:\s*$")
+UpperRe = re.compile(r"^UPPER:\s*$")
+ScheduleRe = re.compile(r"^SCHEDULE:\s*$")
 
 #-----------------------------------------------------------------------
 # Extract NOTAM data from the HTML soup
 def parse_notam_soup(soup):
     # Find all the Q-codes
     notam_dict = {}
-    for q in soup.findAll(text=QGroupRe):
-        # Q code is in tr->td->div
-        notam_row = q.parent.parent.parent
+    for notam in soup.findAll(class_="notam"):
+        try:
+            data = {}
 
-        # Get NOTAM id from adjancent cell to the NOTAM
-        id = notam_row.find('td', {"class": "right"}).string
+            qline = notam.find(string=QGroupRe)
+            data['qline'] = QGroupRe.match(qline).groupdict()
 
-        # Get Q-line
-        n_dict = QGroupRe.match(q.string).groupdict()
-        notam = q.parent.parent
+            data['text'] = notam.find("pre").text.strip()
 
-        # Get NOTAM text remove Q-line and blank lines
-        notam_text = notam.get_text()
-        clean_text = "\n".join([n for n in notam_text.splitlines()
-                                if n.strip() and not n.startswith("Q)")])
-        n_dict["text"] = clean_text
+            frm = str(notam.find("b", string=FromRe).next_sibling).strip()
+            data['from'] = datetime.strptime(frm, "%d %b %Y %H:%M")
 
-        notam_dict[id] = n_dict
+            to = str(notam.find("b", string=ToRe).next_sibling).strip()
+            if to != "PERM":
+                data['to'] = datetime.strptime(
+                        to.removesuffix("EST").strip(), "%d %b %Y %H:%M")
 
-    return list(notam_dict.values())
+            lower = notam.find("b", string=LowerRe)
+            if lower:
+                data['lower'] = str(lower.next_sibling).strip()
+
+            upper = notam.find("b", string=UpperRe)
+            if upper:
+                data['upper'] = str(upper.next_sibling).strip()
+
+            schedule = notam.find("b", string=ScheduleRe)
+            if schedule:
+                data['schedule'] = str(schedule.next_sibling).strip()
+
+            id = notam.find(class_="notamid").text.strip()
+            notam_dict[id] = data
+        except Exception as e:
+            print(e, notam.text)
+
+    return notam_dict
 
 #-----------------------------------------------------------------------
 # Get NOTAMS from NATS website & make PDF document
-def navplot(filename, firs, start_date, num_days, username, password,
-             mapinfo):
-    # Calculate dates
-    if start_date == datetime.date.today():
-        utc = datetime.datetime.utcnow()
-        start_hour = utc.hour
-        start_min = utc.minute
-    else:
-        start_hour = 0
-        start_min = 0
-    end_date = start_date + datetime.timedelta(days=num_days-1)
+def navplot(filename, date, mapinfo):
+    r = requests.get("http://pibs.nats.co.uk/operational/pibs/pib3.shtml")
+    soup = BeautifulSoup(r.text, features="lxml")
 
-    browser = mechanicalsoup.StatefulBrowser()
-
-    # Log in
-    browser.open(LOGIN_URL)
-    browser.select_form()
-    browser['j_username'] = username
-    browser['j_password'] = password
-    browser.submit_selected()
-
-    # Area Briefing page
-    browser.open(AREA_BRIEF_URL)
-
-    browser.select_form("#mainForm")
-    browser["mainForm:startValidityDay"] = str(start_date.day)
-    browser["mainForm:startValidityMonth"] = str(start_date.month-1)
-    browser["mainForm:startValidityYear"] = str(start_date.year)
-    browser["mainForm:startValidityHour"] = str(start_hour)
-    browser["mainForm:startValidityMinute"] = str(start_min)
-    browser["mainForm:endValidityDay"] = str(end_date.day)
-    browser["mainForm:endValidityMonth"] = str(end_date.month-1)
-    browser["mainForm:endValidityYear"] = str(end_date.year)
-    browser["mainForm:endValidityHour"] = "23"
-    browser["mainForm:endValidityMinute"] = "59"
-    browser["mainForm:traffic"] = "V"
-    browser["mainForm:lowerFL"] = "000"
-    browser["mainForm:upperFL"] = "100"
-    for i, fir in enumerate(firs):
-        browser["mainForm:fir_%d" % i] = fir
-    response = browser.submit_selected("mainForm:generate")
-
-    notams = parse_notam_soup(response.soup)
+    notam_dict = parse_notam_soup(soup)
+    notams = list(notam_dict.values())
 
     # Get the header text (discarding non-ASCII characters)
-    hdr = response.soup.find("div", {"id": "mainColContent"}).get_text()
-    hdr_text = "\n".join([h.strip() for h in hdr.splitlines() if h.strip()])
+    #hdr = response.soup.find("div", {"id": "mainColContent"}).get_text()
+    #hdr_text = "\n".join([h.strip() for h in hdr.splitlines() if h.strip()])
+    hdr = "HEADER"
 
-    # Create PDF document
+    # Filter by date
+    notams = [n for n in notams if date_filter(n, date)]
+
+    # Get map data
     with open(resource_filename(__name__, "data/map.dat")) as f:
         mapdata = f.read()
 
-    notamdoc.notamdoc(notams, hdr_text, firs, start_date, num_days, filename,
-                      mapinfo, mapdata)
+    # Create PDF document
+    notamdoc.notamdoc(notams, hdr, date, filename, mapinfo, mapdata)
+
+#-----------------------------------------------------------------------
+# Filter by date
+def date_filter(notam, date):
+    if date < notam['from'].date():
+        return False
+    elif 'to' not in notam:
+        return True
+    else:
+        return date <= notam['to'].date()

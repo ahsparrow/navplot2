@@ -45,14 +45,12 @@ GLIDING_SITES = {
 # Reportlab Platypus template
 
 class DocTemplate(SimpleDocTemplate):
-    def __init__(self, filename, firs, dateStr, notams, mapinfo,
-                 mapdata, **kw):
+    def __init__(self, filename, dateStr, notams, mapinfo, mapdata, **kw):
         SimpleDocTemplate.__init__(self, filename, **kw)
         self.lat0 = mapinfo[0]
         self.lon0 = mapinfo[1]
         self.notams = notams
         self.dateStr = dateStr
-        self.firs = firs
         self.bottomOffset = 5*mm
         self.map_data = mapdata
 
@@ -81,10 +79,9 @@ def drawFirstPage(canvas, doc):
     tobj.setTextOrigin(doc.leftMargin, doc.pagesize[1]-doc.topMargin-24)
     tobj.setFont('Helvetica-Bold', 32)
     tobj.setLeading(22)
-    firstr = '/'.join(doc.firs)
     tobj.textLine('NavPlot')
     tobj.setFont('Helvetica', 16)
-    tobj.textLine('%s Navigation warnings for: %s' % (firstr, doc.dateStr))
+    tobj.textLine('Navigation warnings for: %s' % doc.dateStr)
     canvas.drawText(tobj)
 
     # Small print
@@ -156,16 +153,12 @@ def drawFirstPage(canvas, doc):
 #------------------------------------------------------------------------------
 # Produce NOTAM document
 def format_doc(local_notams, area_notams, boring_notams, local_coords,
-               header, firs, start_date, num_days, filename, mapinfo,
-               mapdata):
+               header, date, filename, mapinfo, mapdata):
 
-    date_str = start_date.strftime('%a, %d %b %y')
-    if num_days > 1:
-        end_date = start_date + datetime.timedelta(num_days-1)
-        date_str += ' - ' + end_date.strftime('%a, %d %b %y')
+    date_str = date.strftime('%a, %d %b %y')
 
     # Define Platypus template and paragraph styles
-    doc = DocTemplate(filename, firs, date_str, local_coords, mapinfo,
+    doc = DocTemplate(filename, date_str, local_coords, mapinfo,
                       mapdata,
                       leftMargin=15*mm, rightMargin=15*mm, bottomMargin=10*mm,
                       topMargin=15*mm,
@@ -228,10 +221,9 @@ def format_doc(local_notams, area_notams, boring_notams, local_coords,
     doc.build(story, onFirstPage=drawFirstPage)
 
 #------------------------------------------------------------------------------
-def notamdoc(notams, header, firs, start_date, num_days, filename, mapinfo,
-             mapdata):
+def notamdoc(notams, header, date, filename, mapinfo, mapdata):
     # Sort by latitude of area centre
-    notams.sort(key=lambda x: int(x['centre'][:4]))
+    notams.sort(key=lambda x: int(x['qline']['centre'][:4]))
 
     # NOTAMS are split into three categories - localNotams have an
     # "interesting" subject with a radius <=30nm. These are the ones that are
@@ -244,36 +236,41 @@ def notamdoc(notams, header, firs, start_date, num_days, filename, mapinfo,
     interesting_coords = []
     for n in notams:
         # NOTAM description text
-        if 'start' in n:
-            start = n['start'].strftime('%d/%b %H:%M') 
-            end = n['end'].strftime('%d/%b %H:%M')
-            notam_text = '%s - %s UTC  (%s)\n' % (start, end, n['id'])
-        else:
-            notam_text = ''
+        notam_text = "FROM: %s" % n['from'].strftime("%y/%m/%d %H:%M")
+        to = "PERM" if 'to' not in n else n['to'].strftime("%y/%m/%d %H:%M")
+        notam_text += " TO: %s\n" % to
+
         notam_text += n['text']
+        if 'lower' in n:
+            notam_text += "\nLOWER: %s" % n['lower']
+
+        if 'upper' in n:
+            notam_text += "\nUPPER: %s" % n['upper']
+
+        if 'schedule' in n:
+            notam_text += "\nSCHEDULE: %s" % n['schedule']
 
         # Sort into interesting, area & boring categories
-        qc = n['qcode']
+        qc = n['qline']['qcode']
         if ((qc[1]=='R') or
             (qc[1]=='W' and qc[2] in 'ABGMPR') or
             (qc[1]=='A' and qc[2] in 'CERTZ' and qc[3:5] in ['CA', 'CS'])):
 
-            if int(n['radius']) > 30:
+            if int(n['qline']['radius']) > 30:
                 area_notams.append(notam_text)
             else:
                 interesting_notams.append(notam_text)
 
                 # Coordinates for map
-                ctext = n['centre']
+                ctext = n['qline']['centre']
                 lat = int(ctext[:2]) + int(ctext[2:4])/60.0
                 lon = int(ctext[5:8]) + int(ctext[8:10])/60.0
                 if ctext[10] == 'W':
                     lon = -lon
-                rad = int(n['radius'])
+                rad = int(n['qline']['radius'])
                 interesting_coords.append((lat, lon, rad))
         elif qc[1]=='W':
             boring_notams.append(notam_text)
 
     format_doc(interesting_notams, area_notams, boring_notams,
-               interesting_coords, header, firs, start_date, num_days,
-               filename, mapinfo, mapdata)
+               interesting_coords, header, date, filename, mapinfo, mapdata)
