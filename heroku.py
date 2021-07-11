@@ -34,7 +34,7 @@ TOMORROW_HOURS = [16, 17, 18]
 def update_db(name, now, next, data):
     client = MongoClient(
         "mongodb+srv://navplot@cluster0.ywtwj.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
-        password="pRX5jOrjas0H7UBD")
+        password=os.environ['MONGODB_PASSWORD'])
 
     db = client['notam']
     collection = db['notams']
@@ -64,11 +64,11 @@ if now.hour in set(TODAY_HOURS + TOMORROW_HOURS):
 
         buf = io.BytesIO()
         make_briefing(buf, notam_soup, date, SOUTH)
-        update_db("today-south", now, next, buf.getvalue())
+        update_db("today_south", now, next, buf.getvalue())
 
         buf = io.BytesIO()
         make_briefing(buf, notam_soup, date, NORTH)
-        update_db("today-north", now, next, buf.getvalue())
+        update_db("today_north", now, next, buf.getvalue())
 
     # Tomorrow's NOTAMs
     if now.hour in TOMORROW_HOURS:
@@ -77,8 +77,8 @@ if now.hour in set(TODAY_HOURS + TOMORROW_HOURS):
 
         buf = io.BytesIO()
         make_briefing(buf, notam_soup, date, SOUTH)
-        update_db("tomorrow-south", now, next, buf.getvalue())
+        update_db("tomorrow_south", now, next, buf.getvalue())
 
         buf = io.BytesIO()
         make_briefing(buf, notam_soup, date, NORTH)
-        update_db("tomorrow-north", now, next, buf.getvalue())
+        update_db("tomorrow_north", now, next, buf.getvalue())
