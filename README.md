@@ -1,6 +1,6 @@
 # NAVPLOT
 
-Generates a PDF NOTAM breifing.
+Generates a PDF NOTAM briefing.
 
 The app can be used standalone via the navplot.py script, or via a Heroku
 scheduler to store data in MongoDB Atlas database for use by the ASSelect
