@@ -73,7 +73,7 @@ if now.hour in set(TODAY_HOURS + TOMORROW_HOURS):
     # Tomorrow's NOTAMs
     if now.hour in TOMORROW_HOURS:
         next = get_next(now, TOMORROW_HOURS)
-        date = now.date() + datetime.timedelta(hour=1)
+        date = now.date() + datetime.timedelta(days=1)
 
         buf = io.BytesIO()
         make_briefing(buf, notam_soup, date, SOUTH)
