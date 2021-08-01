@@ -61,7 +61,7 @@ def parse_notam_soup(soup):
             to = str(notam.find("b", string=ToRe).next_sibling).strip()
             if to != "PERM":
                 data['to'] = datetime.strptime(
-                        to.removesuffix("EST").strip(), "%d %b %Y %H:%M")
+                        to.replace("EST", "").strip(), "%d %b %Y %H:%M")
 
             lower = notam.find("b", string=LowerRe)
             if lower:
