@@ -6,6 +6,5 @@ After=network.target
 User=ukair
 Group=www-data
 WorkingDirectory=/home/ahs/src/navplot2
-EnvironmentFile=/home/ahs/src/navplot2/password
-ExecStart=/home/ahs/src/navplot2/tomorrow.sh venv $PASSWORD /var/ukair/media/notam
+ExecStart=/home/ahs/src/navplot2/tomorrow.sh venv /var/ukair/media/notam
 
