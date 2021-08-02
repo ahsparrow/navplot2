@@ -2,7 +2,7 @@
 Description="Schedule getting tomorrow's NOTAMs"
 
 [Timer]
-OnCalendar=*-*-* 18:02:30
+OnCalendar=*-*-* 16,17,18:02:30
 
 [Install]
 WantedBy=timers.target
