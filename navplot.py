@@ -38,7 +38,6 @@ def navplot_cli():
                        help="Plot South of country (default)")
     group.add_argument("--north", action="store_true",
                        help="Plot North of country")
-
     args = parser.parse_args()
 
     # Use with UTC times/dates
@@ -46,9 +45,10 @@ def navplot_cli():
     if args.tomorrow:
         date += datetime.timedelta(1)
 
+    firs = ["EGTT", "EGPX"] if args.north else ["EGTT"]
     mapscale = NORTH if args.north else SOUTH
 
-    navplot(args.pdf_filename, date, mapscale)
+    navplot(args.pdf_filename, firs, date, mapscale)
 
 if __name__ == "__main__":
     navplot_cli()

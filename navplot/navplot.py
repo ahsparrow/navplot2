@@ -16,7 +16,6 @@
 # along with YAIXM.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import datetime
-import re
 
 from bs4 import BeautifulSoup
 import requests
@@ -24,63 +23,70 @@ from pkg_resources import resource_filename
 
 from . import notamdoc
 
-# Regex for the Q-line
-QGroupRe = re.compile(
-    r'(?P<fir>[A-Z]+)/'
-    r'(?P<qcode>Q[A-Z]+)/'
-    r'(?P<traffic>[IV]+)/'
-    r'(?P<purpose>[NBOM]+)/'
-    r'(?P<scope>[AEW]+)/'
-    r'(?P<lower>\d+)/'
-    r'(?P<upper>\d+)/'
-    r'(?P<centre>\d{4}[NS]\d{5}[EW])(?P<radius>\d{3})')
+#-----------------------------------------------------------------------
+# Parse NOTAM soup and return dictionary of notams
+def parse_notams(soup):
+    notams = {}
+    for notam in soup:
+        data = {}
 
-ToRe = re.compile(r"^TO:\s*$")
-FromRe = re.compile(r"^FROM:\s*$")
-LowerRe = re.compile(r"^LOWER:\s*$")
-UpperRe = re.compile(r"^UPPER:\s*$")
-ScheduleRe = re.compile(r"^SCHEDULE:\s*$")
+        # NOTAM id
+        id = "/".join([getattr(notam, a).string
+            for a in ["NOF", "Series", "Number", "Year", "Type"]])
+
+        data['qline'] = {
+            'qcode': "Q" + notam.QLine.Code23.string + notam.QLine.Code45.string,
+            'centre': notam.Coordinates.string,
+            'radius': notam.Radius.string
+        }
+
+        # Start and end dates
+        data['from'] = datetime.strptime(
+                notam.StartValidity.string, "%y%m%d%H%M")
+
+        if notam.EndValidity.string != "PERM":
+            data['to'] = datetime.strptime(
+                    notam.EndValidity.string, "%y%m%d%H%M")
+
+        # Lower and upper limits
+        lower = notam.find("ItemF")
+        if lower:
+            data['lower'] = lower.string
+        upper = notam.find("ItemG")
+        if upper:
+            data['upper'] = upper.string
+
+        schedule = notam.find("ItemD")
+        if schedule:
+            data['schedule'] = schedule
+
+        # NOTAM text
+        data['text'] = notam.ItemE.string
+
+        notams[id] = data
+
+    return notams
 
 #-----------------------------------------------------------------------
-# Extract NOTAM data from the HTML soup
-def parse_notam_soup(soup):
-    # Find all the Q-codes
+# Extract NOTAMS for list of FIRS
+def extract_notams(soup, firs):
+    # Use a dictionary to exclude any duplicate NOTAMs
     notam_dict = {}
-    for notam in soup.findAll(class_="notam"):
-        try:
-            data = {}
 
-            qline = notam.find(string=QGroupRe)
-            data['qline'] = QGroupRe.match(qline).groupdict()
+    firsections = soup.find_all("FIRSection")
+    for firsection in firsections:
+        if firsection.ICAO.string not in firs:
+            continue
 
-            data['text'] = notam.find("pre").text.strip()
+        # NAV warnings
+        notams = firsection.Warnings.NotamList.find_all("Notam")
+        notam_dict.update(parse_notams(notams))
 
-            frm = str(notam.find("b", string=FromRe).next_sibling).strip()
-            data['from'] = datetime.strptime(frm, "%d %b %Y %H:%M")
+        # En-route
+        notams = firsection.find('En-route').NotamList.find_all('Notam')
+        notam_dict.update(parse_notams(notams))
 
-            to = str(notam.find("b", string=ToRe).next_sibling).strip()
-            if to != "PERM":
-                data['to'] = datetime.strptime(
-                        to.replace("EST", "").strip(), "%d %b %Y %H:%M")
-
-            lower = notam.find("b", string=LowerRe)
-            if lower:
-                data['lower'] = str(lower.next_sibling).strip()
-
-            upper = notam.find("b", string=UpperRe)
-            if upper:
-                data['upper'] = str(upper.next_sibling).strip()
-
-            schedule = notam.find("b", string=ScheduleRe)
-            if schedule:
-                data['schedule'] = str(schedule.next_sibling).strip()
-
-            id = notam.find(class_="notamid").text.strip()
-            notam_dict[id] = data
-        except Exception as e:
-            print(e, notam.text)
-
-    return notam_dict
+    return list(notam_dict.values())
 
 #-----------------------------------------------------------------------
 # Filter by date
@@ -93,26 +99,20 @@ def date_filter(notam, date):
         return date <= notam['to'].date()
 
 #-----------------------------------------------------------------------
-# Get data from contingency bulletin website
+# Get XML data from contingency bulletin website
 def get_notams():
-    # Navigation warning contingency bulletin
-    r = requests.get("http://pibs.nats.co.uk/operational/pibs/pib3.shtml")
-    soup = BeautifulSoup(r.text, features="lxml")
+    r = requests.get("http://pibs.nats.co.uk/operational/pibs/PIB.xml")
 
+    soup = BeautifulSoup(r.text, features="lxml-xml")
     return soup
 
 #-----------------------------------------------------------------------
 # Create NOTAM briefing
-def make_briefing(filename, soup, date, map_extent):
-    # Get validity string
+def make_briefing(soup, filename, firs, date, map_extent):
     hdr = "UK AIS - CONTINGENCY BULLETIN\n"
-    validity = soup.find(id="body")\
-            .find(class_="header").find(string="VALIDITY (UTC):").parent
-    hdr += "".join(validity.text.splitlines())
+    hdr += "Issued: " + soup.AreaPIBHeader.Issued.string
 
-    # Get list of notams
-    notam_dict = parse_notam_soup(soup)
-    notams = list(notam_dict.values())
+    notams = extract_notams(soup, firs)
 
     # Filter by date
     notams = [n for n in notams if date_filter(n, date)]
@@ -126,6 +126,6 @@ def make_briefing(filename, soup, date, map_extent):
 
 #-----------------------------------------------------------------------
 # Get NOTAMS from NATS website & make PDF document
-def navplot(filename, date, map_extent):
+def navplot(filename, firs, date, map_extent):
     notam_soup = get_notams()
-    make_briefing(filename, notam_soup, date, map_extent)
+    make_briefing(notam_soup, filename, firs, date, map_extent)
