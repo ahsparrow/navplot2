@@ -23,6 +23,8 @@ from pkg_resources import resource_filename
 
 from . import notamdoc
 
+NOTAM_URL = "http://pibs.nats.co.uk/operational/pibs/PIB.xml"
+
 #-----------------------------------------------------------------------
 # Parse NOTAM soup and return dictionary of notams
 def parse_notams(soup):
@@ -101,7 +103,7 @@ def date_filter(notam, date):
 #-----------------------------------------------------------------------
 # Get XML data from contingency bulletin website
 def get_notams():
-    r = requests.get("http://pibs.nats.co.uk/operational/pibs/PIB.xml")
+    r = requests.get(NOTAM_URL)
 
     soup = BeautifulSoup(r.text, features="lxml-xml")
     return soup
@@ -110,6 +112,7 @@ def get_notams():
 # Create NOTAM briefing
 def make_briefing(soup, filename, firs, date, map_extent):
     hdr = "UK AIS - CONTINGENCY BULLETIN\n"
+    hdr += "Data source: " + NOTAM_URL + "\n"
     hdr += "Issued: " + soup.AreaPIBHeader.Issued.string
 
     notams = extract_notams(soup, firs)
