@@ -3,26 +3,14 @@
 Generates a PDF NOTAM briefing.
 
 The app can be used standalone via the navplot.py script, or via a Heroku
-scheduler to store data in MongoDB Atlas database for use by the ASSelect
-app.
+scheduler to store files in Dropbox for use by the ASSelect app.
 
 ## Development
 
-### MongoDB
+### Dropbox
 
-1. Create a database "notam" with a collection "notams"
-2. Add user "navplot"
-3. Create a Realm app "Navplot" with function getnotam
-
-        exports = function(name) {
-            var collection = context.services.get("mongodb-atlas").db("notam").collection("notams");
-            return collection.findOne({ name: name}).then((doc) => {
-              return doc;
-            });
-        };
-
-4. Set API Key authentication for the Realm app
-5. Update the ASSelect app with both the App ID and the API Key
+1. Create a Dropbox app
+2. Use dropbox/get\_refresh\_token.py to generate the OAuth2 refresh token
 
 ### Heroku
 
@@ -43,8 +31,18 @@ https://devcenter.heroku.com/articles/heroku-cli and login to Heroku
 5. Add the Heroku-Scheduler addon
 6. Create config vars:
 
-        heroku config:set MONGODB_PASSWORD=<mongodb_password>
+        heroku config:set DROPBOX_APP_KEY=<Dropbox app key>
+        heroku config:set DROPBOX_APP_SECRET=<Dropbox app secret>
+        heroku config:set DROPBOX_REFRESH_TOKEN=<OAuth refresh token>
 
 7. Create a Heroku scheduler job to run hourly at 10 minutes past:
 
         python heroku.py
+
+### Dropbox
+
+3. Generate shared links for the four PDF files
+
+### ASSelect
+
+8. Update the download links in the ASSelect app. The refs should end ...?dl=1
