@@ -49,6 +49,7 @@ if now.hour in HOURS:
     notam_soup = get_notams()
     date = now.date()
 
+    # Today's NOTAMs
     buf = io.BytesIO()
     make_briefing(buf, notam_soup, date, SOUTH)
     upload_dropbox("today_south", now, buf.getvalue())
@@ -56,6 +57,9 @@ if now.hour in HOURS:
     buf = io.BytesIO()
     make_briefing(buf, notam_soup, date, NORTH)
     upload_dropbox("today_north", now, buf.getvalue())
+
+    # Tomorrow's NOTAMs
+    date += datetime.timedelta(days=1)
 
     buf = io.BytesIO()
     make_briefing(buf, notam_soup, date, SOUTH)
