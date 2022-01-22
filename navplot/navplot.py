@@ -108,7 +108,7 @@ def get_notams():
 #-----------------------------------------------------------------------
 # Create NOTAM briefing
 def make_briefing(filename, soup, date, map_extent):
-    hdr = "UK AIS - CONTINGENCY BULLETIN\n"
+    hdr = "UK AIS - BULLETIN\n"
     hdr += "Data source: " + NOTAM_URL + "\n"
     hdr += "Issued: " + soup.AreaPIBHeader.Issued.string
 
