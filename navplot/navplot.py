@@ -70,16 +70,13 @@ def parse_notams(soup):
     return notams
 
 #-----------------------------------------------------------------------
-# Extract NOTAMS for list of FIRS
-def extract_notams(soup, firs):
+# Extract NOTAMS
+def extract_notams(soup):
     # Use a dictionary to exclude any duplicate NOTAMs
     notam_dict = {}
 
     firsections = soup.find_all("FIRSection")
     for firsection in firsections:
-        if firsection.ICAO.string not in firs:
-            continue
-
         # NAV warnings
         notams = firsection.Warnings.NotamList.find_all("Notam")
         notam_dict.update(parse_notams(notams))
@@ -110,12 +107,12 @@ def get_notams():
 
 #-----------------------------------------------------------------------
 # Create NOTAM briefing
-def make_briefing(soup, filename, firs, date, map_extent):
+def make_briefing(soup, filename, date, map_extent):
     hdr = "UK AIS - CONTINGENCY BULLETIN\n"
     hdr += "Data source: " + NOTAM_URL + "\n"
     hdr += "Issued: " + soup.AreaPIBHeader.Issued.string
 
-    notams = extract_notams(soup, firs)
+    notams = extract_notams(soup)
 
     # Filter by date
     notams = [n for n in notams if date_filter(n, date)]
@@ -129,6 +126,6 @@ def make_briefing(soup, filename, firs, date, map_extent):
 
 #-----------------------------------------------------------------------
 # Get NOTAMS from NATS website & make PDF document
-def navplot(filename, firs, date, map_extent):
+def navplot(filename, date, map_extent):
     notam_soup = get_notams()
-    make_briefing(notam_soup, filename, firs, date, map_extent)
+    make_briefing(notam_soup, filename, date, map_extent)
