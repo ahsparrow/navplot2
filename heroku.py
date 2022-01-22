@@ -28,13 +28,12 @@ from navplot import get_notams, make_briefing
 SOUTH = (50.2, -5.0, 6.5)
 NORTH = (53.0, -6.0, 6.0)
 
-TODAY_HOURS = list(range(6, 18))
-TOMORROW_HOURS = [16, 17, 18]
+HOURS = list(range(6, 18))
 
 def upload_dropbox(name, now, data):
-    refresh_token = os.environ['DROPBOX_REFRESH_TOKEN']
     app_key = os.environ['DROPBOX_APP_KEY']
     app_secret = os.environ['DROPBOX_APP_SECRET']
+    refresh_token = os.environ['DROPBOX_REFRESH_TOKEN']
 
     dbx = dropbox.Dropbox(
             app_key=app_key,
@@ -46,29 +45,22 @@ def upload_dropbox(name, now, data):
 
 now = datetime.datetime.utcnow().replace(microsecond=0)
 
-if now.hour in set(TODAY_HOURS + TOMORROW_HOURS):
+if now.hour in HOURS:
     notam_soup = get_notams()
+    date = now.date()
 
-    # Today's NOTAMs
-    if now.hour in TODAY_HOURS:
-        date = now.date()
+    buf = io.BytesIO()
+    make_briefing(buf, notam_soup, date, SOUTH)
+    upload_dropbox("today_south", now, buf.getvalue())
 
-        buf = io.BytesIO()
-        make_briefing(buf, notam_soup, date, SOUTH)
-        upload_dropbox("today_south", now, buf.getvalue())
+    buf = io.BytesIO()
+    make_briefing(buf, notam_soup, date, NORTH)
+    upload_dropbox("today_north", now, buf.getvalue())
 
-        buf = io.BytesIO()
-        make_briefing(buf, notam_soup, date, NORTH)
-        upload_dropbox("today_north", now, buf.getvalue())
+    buf = io.BytesIO()
+    make_briefing(buf, notam_soup, date, SOUTH)
+    upload_dropbox("tomorrow_south", now, buf.getvalue())
 
-    # Tomorrow's NOTAMs
-    if now.hour in TOMORROW_HOURS:
-        date = now.date() + datetime.timedelta(days=1)
-
-        buf = io.BytesIO()
-        make_briefing(buf, notam_soup, date, SOUTH)
-        upload_dropbox("tomorrow_south", now, buf.getvalue())
-
-        buf = io.BytesIO()
-        make_briefing(buf, notam_soup, date, NORTH)
-        upload_dropbox("tomorrow_north", now, buf.getvalue())
+    buf = io.BytesIO()
+    make_briefing(buf, notam_soup, date, NORTH)
+    upload_dropbox("tomorrow_north", now, buf.getvalue())
