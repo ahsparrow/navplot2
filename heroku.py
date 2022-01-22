@@ -20,7 +20,7 @@ import datetime
 import io
 import os
 
-from pymongo import MongoClient
+import dropbox
 
 from navplot import get_notams, make_briefing
 
@@ -31,26 +31,18 @@ NORTH = (53.0, -6.0, 6.0)
 TODAY_HOURS = list(range(6, 18))
 TOMORROW_HOURS = [16, 17, 18]
 
-def update_db(name, now, next, data):
-    client = MongoClient(
-        "mongodb+srv://navplot@cluster0.ywtwj.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
-        password=os.environ['MONGODB_PASSWORD'])
+def upload_dropbox(name, now, data):
+    refresh_token = os.environ['DROPBOX_REFRESH_TOKEN']
+    app_key = os.environ['DROPBOX_APP_KEY']
+    app_secret = os.environ['DROPBOX_APP_SECRET']
 
-    db = client['notam']
-    collection = db['notams']
+    dbx = dropbox.Dropbox(
+            app_key=app_key,
+            app_secret=app_secret,
+            oauth2_refresh_token=refresh_token)
 
-    collection.update_one(
-        {'name': name},
-        {'$set': {'name': name, 'current': now, 'next': next, 'pdf': data}},
-        upsert=True)
-
-def get_next(now, hours):
-    if now.hour == hours[-1]:
-        offset = 24 + hours[0] - hours[-1]
-    else:
-        offset = 1
-
-    return now + datetime.timedelta(hours=offset)
+    dbx.files_upload(
+            data, "/" + name + ".pdf", dropbox.files.WriteMode.overwrite)
 
 now = datetime.datetime.utcnow().replace(microsecond=0)
 
@@ -59,26 +51,24 @@ if now.hour in set(TODAY_HOURS + TOMORROW_HOURS):
 
     # Today's NOTAMs
     if now.hour in TODAY_HOURS:
-        next = get_next(now, TODAY_HOURS)
         date = now.date()
 
         buf = io.BytesIO()
         make_briefing(buf, notam_soup, date, SOUTH)
-        update_db("today_south", now, next, buf.getvalue())
+        upload_dropbox("today_south", now, buf.getvalue())
 
         buf = io.BytesIO()
         make_briefing(buf, notam_soup, date, NORTH)
-        update_db("today_north", now, next, buf.getvalue())
+        upload_dropbox("today_north", now, buf.getvalue())
 
     # Tomorrow's NOTAMs
     if now.hour in TOMORROW_HOURS:
-        next = get_next(now, TOMORROW_HOURS)
         date = now.date() + datetime.timedelta(days=1)
 
         buf = io.BytesIO()
         make_briefing(buf, notam_soup, date, SOUTH)
-        update_db("tomorrow_south", now, next, buf.getvalue())
+        upload_dropbox("tomorrow_south", now, buf.getvalue())
 
         buf = io.BytesIO()
         make_briefing(buf, notam_soup, date, NORTH)
-        update_db("tomorrow_north", now, next, buf.getvalue())
+        upload_dropbox("tomorrow_north", now, buf.getvalue())
