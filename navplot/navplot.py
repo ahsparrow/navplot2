@@ -107,7 +107,7 @@ def get_notams():
 
 #-----------------------------------------------------------------------
 # Create NOTAM briefing
-def make_briefing(soup, filename, date, map_extent):
+def make_briefing(filename, soup, date, map_extent):
     hdr = "UK AIS - CONTINGENCY BULLETIN\n"
     hdr += "Data source: " + NOTAM_URL + "\n"
     hdr += "Issued: " + soup.AreaPIBHeader.Issued.string
@@ -128,4 +128,4 @@ def make_briefing(soup, filename, date, map_extent):
 # Get NOTAMS from NATS website & make PDF document
 def navplot(filename, date, map_extent):
     notam_soup = get_notams()
-    make_briefing(notam_soup, filename, date, map_extent)
+    make_briefing(filename, notam_soup, date, map_extent)
