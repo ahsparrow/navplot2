@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with YAIXM.  If not, see <http://www.gnu.org/licenses/>.
 
+import argparse
 import datetime
 import json
 import io
@@ -52,38 +53,43 @@ def upload_google(service, file_id, data):
     media = MediaIoBaseUpload(data, mimetype="application/pdf")
     service.files().update(fileId=file_id, media_body=media).execute()
 
-now = datetime.datetime.utcnow().replace(microsecond=0)
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--force", "-f", action="store_true")
+    args = parser.parse_args()
 
-if now.hour in HOURS:
-    # Get NOTAM data
-    notam_soup = get_notams()
+    now = datetime.datetime.utcnow().replace(microsecond=0)
 
-    # Authenticate and construct service.
-    account_info = json.loads(os.environ['SERVICE_ACCOUNT_KEY'])
-    service = get_service(
-        api_name='drive',
-        api_version='v3',
-        scopes=['https://www.googleapis.com/auth/drive'],
-        account_info=account_info)
+    if now.hour in HOURS or args.force:
+        # Get NOTAM data
+        notam_soup = get_notams()
 
-    # Today's NOTAMs
-    date = now.date()
+        # Authenticate and construct service.
+        account_info = json.loads(os.environ['SERVICE_ACCOUNT_KEY'])
+        service = get_service(
+            api_name='drive',
+            api_version='v3',
+            scopes=['https://www.googleapis.com/auth/drive'],
+            account_info=account_info)
 
-    buf = io.BytesIO()
-    make_briefing(buf, notam_soup, date, SOUTH_EXTENTS)
-    upload_google(service, TODAY_SOUTH_ID, buf)
+        # Today's NOTAMs
+        date = now.date()
 
-    buf = io.BytesIO()
-    make_briefing(buf, notam_soup, date, NORTH_EXTENTS)
-    upload_google(service, TODAY_NORTH_ID, buf)
+        buf = io.BytesIO()
+        make_briefing(buf, notam_soup, date, SOUTH_EXTENTS)
+        upload_google(service, TODAY_SOUTH_ID, buf)
 
-    # Tomorrow's NOTAMs
-    date += datetime.timedelta(days=1)
+        buf = io.BytesIO()
+        make_briefing(buf, notam_soup, date, NORTH_EXTENTS)
+        upload_google(service, TODAY_NORTH_ID, buf)
 
-    buf = io.BytesIO()
-    make_briefing(buf, notam_soup, date, SOUTH_EXTENTS)
-    upload_google(service, TOMORROW_SOUTH_ID, buf)
+        # Tomorrow's NOTAMs
+        date += datetime.timedelta(days=1)
 
-    buf = io.BytesIO()
-    make_briefing(buf, notam_soup, date, NORTH_EXTENTS)
-    upload_google(service, TOMORROW_NORTH_ID, buf)
+        buf = io.BytesIO()
+        make_briefing(buf, notam_soup, date, SOUTH_EXTENTS)
+        upload_google(service, TOMORROW_SOUTH_ID, buf)
+
+        buf = io.BytesIO()
+        make_briefing(buf, notam_soup, date, NORTH_EXTENTS)
+        upload_google(service, TOMORROW_NORTH_ID, buf)
