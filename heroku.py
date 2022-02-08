@@ -29,7 +29,7 @@ from navplot import get_notams, make_briefing
 SOUTH_EXTENTS = (50.2, -5.0, 6.5)
 NORTH_EXTENTS = (53.0, -6.0, 6.0)
 
-HOURS = list(range(6, 18))
+HOURS = list(range(5, 18))
 
 def upload_dropbox(name, now, data):
     app_key = os.environ['DROPBOX_APP_KEY']
