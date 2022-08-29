@@ -15,7 +15,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install dropbox bs4 requests reportlab
+          pip install dropbox bs4 lxml requests reportlab
 
       - name: Deploy
         run: python heroku.py
