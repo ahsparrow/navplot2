@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with YAIXM.  If not, see <http://www.gnu.org/licenses/>.
 
-import argparse
 import datetime
 import io
 import os
@@ -43,10 +42,6 @@ def upload_dropbox(name, now, data):
             data, "/" + name + ".pdf", dropbox.files.WriteMode.overwrite)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--force", "-f", action="store_true")
-    args = parser.parse_args()
-
     now = datetime.datetime.utcnow().replace(microsecond=0)
 
     notam_soup = get_notams()
