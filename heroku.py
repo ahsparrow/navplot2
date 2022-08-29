@@ -53,6 +53,7 @@ if __name__ == '__main__':
 
     if now.hour in HOURS or args.force:
         notam_soup = get_notams()
+        print(notam_soup)
         date = now.date()
 
         # Today's NOTAMs
