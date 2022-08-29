@@ -1,5 +1,5 @@
 name: deploy
-on: [push]
+on: [workflow_dispatch]
 jobs:
   build:
     environment: DROPBOX
@@ -18,7 +18,7 @@ jobs:
           pip install dropbox bs4 lxml requests reportlab
 
       - name: Deploy
-        run: python heroku.py
+        run: python github.py
         env:
           DROPBOX_APP_KEY: ${{ secrets.DROPBOX_APP_KEY }}
           DROPBOX_APP_SECRET: ${{ secrets.DROPBOX_APP_SECRET }}
