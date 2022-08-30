@@ -46,10 +46,6 @@ jobs:
         run: |
           mkdir _site
           python github_pages.py _site
-        env:
-          DROPBOX_APP_KEY: ${{ secrets.DROPBOX_APP_KEY }}
-          DROPBOX_APP_SECRET: ${{ secrets.DROPBOX_APP_SECRET }}
-          DROPBOX_REFRESH_TOKEN: ${{ secrets.DROPBOX_REFRESH_TOKEN }}
 
       - name: Upload artifacts
         uses: actions/upload-pages-artifact@v1
