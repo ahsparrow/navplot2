@@ -109,8 +109,9 @@ def get_notams():
 # Create NOTAM briefing
 def make_briefing(filename, soup, date, map_extent):
     hdr = "UK AIS - BULLETIN\n"
-    hdr += "Data source: " + NOTAM_URL + "\n"
-    hdr += "Issued: " + soup.AreaPIBHeader.Issued.string
+    hdr += f"Data source: {NOTAM_URL}\n"
+    hdr += f"Issued: {soup.AreaPIBHeader.Issued.string}\n"
+    hdr += f"Created: {datetime.now().isoformat()[:19]}"
 
     notams = extract_notams(soup)
 
