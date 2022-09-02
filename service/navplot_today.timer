@@ -1,8 +1,0 @@
-[Unit]
-Description="Schedule getting today's NOTAMs"
-
-[Timer]
-OnCalendar=*-*-* 1,5..17:01:30
-
-[Install]
-WantedBy=timers.target
