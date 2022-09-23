@@ -41,6 +41,23 @@ GLIDING_SITES = {
     'SUT': (54.2288, -1.2097),
     'TIB': (52.4575,  1.1616)}
 
+# Page margins
+LEFT_MARGIN = 15 * mm
+RIGHT_MARGIN = 15 * mm
+TOP_MARGIN = 15 * mm
+BOTTOM_MARGIN = 10 * mm
+
+# XPreformatted with added hyperlink
+class LinkedXPreformatted(XPreformatted):
+    def __init__(self, link, *args, **kwargs):
+        self.link = str(link)
+        super().__init__(*args, **kwargs)
+
+    def drawOn(self, canvas, x, y, _sW=0):
+        super().drawOn(canvas, x, y, _sW)
+        top = y + self.height + (5 * mm)
+        canvas.bookmarkPage(self.link, fit="XYZ", left=x, top=top)
+
 #------------------------------------------------------------------------------
 # Reportlab Platypus template
 
@@ -148,6 +165,11 @@ def drawFirstPage(canvas, doc):
         else:
             canvas.drawCentredString(x, y-3, str(n+1))
 
+        # Add hyperlink
+        canvas.linkAbsolute("", str(n),
+                (x - (4 * mm), y - (4 * mm), x + (4 * mm), y + (4 * mm)),
+                Border='[0 0 0]')
+
     canvas.restoreState()
 
 #------------------------------------------------------------------------------
@@ -160,8 +182,10 @@ def format_doc(filename, local_notams, area_notams, boring_notams,
     # Define Platypus template and paragraph styles
     doc = DocTemplate(filename, date_str, local_coords, mapinfo,
                       mapdata,
-                      leftMargin=15*mm, rightMargin=15*mm, bottomMargin=10*mm,
-                      topMargin=15*mm,
+                      leftMargin=LEFT_MARGIN,
+                      rightMargin=RIGHT_MARGIN,
+                      bottomMargin=BOTTOM_MARGIN,
+                      topMargin=TOP_MARGIN,
                       title='NOTAM', author='Freeflight')
 
     subStyle = ParagraphStyle('Sub',
@@ -198,7 +222,7 @@ def format_doc(filename, local_notams, area_notams, boring_notams,
         'route</i>, <i>TMA</i> and <i>ATZ</i>', otherStyle))
     for n, notam in enumerate(local_notams):
         story.append(
-            KeepTogether(XPreformatted(notam, notamStyle, bulletText=str(n+1))))
+            KeepTogether(LinkedXPreformatted(n, notam, notamStyle, bulletText=str(n+1))))
 
     if area_notams:
         paras = [XPreformatted(n, otherStyle, bulletText="\N{BULLET}")
