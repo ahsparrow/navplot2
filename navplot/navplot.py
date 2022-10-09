@@ -129,4 +129,7 @@ def make_briefing(filename, soup, date, map_extent):
 # Get NOTAMS from NATS website & make PDF document
 def navplot(filename, date, map_extent):
     notam_soup = get_notams()
-    make_briefing(filename, notam_soup, date, map_extent)
+    try:
+        make_briefing(filename, notam_soup, date, map_extent)
+    except:
+        print(notam_soup)
