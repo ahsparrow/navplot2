@@ -20,6 +20,7 @@ import argparse
 import datetime
 import io
 import os
+import sys
 
 from navplot import get_notams, make_briefing
 
@@ -39,12 +40,20 @@ if __name__ == '__main__':
 
     # Today's NOTAMs
     buf = io.BytesIO()
-    make_briefing(buf, notam_soup, date, SOUTH_EXTENTS)
+    try:
+        make_briefing(buf, notam_soup, date, SOUTH_EXTENTS)
+    except:
+        print(notam_soup)
+        sys.exit(1)
     with open(os.path.join(args.directory, "today_south.pdf"), "wb") as f:
         f.write(buf.getbuffer())
 
     buf = io.BytesIO()
-    make_briefing(buf, notam_soup, date, NORTH_EXTENTS)
+    try:
+        make_briefing(buf, notam_soup, date, NORTH_EXTENTS)
+    except:
+        print(notam_soup)
+        sys.exit(1)
     with open(os.path.join(args.directory, "today_north.pdf"), "wb") as f:
         f.write(buf.getbuffer())
 
@@ -52,11 +61,19 @@ if __name__ == '__main__':
     date += datetime.timedelta(days=1)
 
     buf = io.BytesIO()
-    make_briefing(buf, notam_soup, date, SOUTH_EXTENTS)
+    try:
+        make_briefing(buf, notam_soup, date, SOUTH_EXTENTS)
+    except:
+        print(notam_soup)
+        sys.exit(1)
     with open(os.path.join(args.directory, "tomorrow_south.pdf"), "wb") as f:
         f.write(buf.getbuffer())
 
     buf = io.BytesIO()
-    make_briefing(buf, notam_soup, date, NORTH_EXTENTS)
+    try:
+        make_briefing(buf, notam_soup, date, NORTH_EXTENTS)
+    except:
+        print(notam_soup)
+        sys.exit(1)
     with open(os.path.join(args.directory, "tomorrow_north.pdf"), "wb") as f:
         f.write(buf.getbuffer())
