@@ -16,6 +16,7 @@
 # along with YAIXM.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import datetime
+import json
 
 from bs4 import BeautifulSoup
 import requests
@@ -119,11 +120,14 @@ def make_briefing(filename, soup, date, map_extent):
     notams = [n for n in notams if date_filter(n, date)]
 
     # Get map data
-    with open(resource_filename(__name__, "data/map.dat")) as f:
-        mapdata = f.read()
+    with open(resource_filename(__name__, "data/yaixm.geojson")) as f:
+        airspace_json = json.load(f)
+
+    with open(resource_filename(__name__, "data/coast.geojson")) as f:
+        coast_json = json.load(f)
 
     # Create PDF document
-    notamdoc.notamdoc(filename, notams, hdr, date, map_extent, mapdata)
+    notamdoc.notamdoc(filename, notams, hdr, date, map_extent, airspace_json, coast_json)
 
 #-----------------------------------------------------------------------
 # Get NOTAMS from NATS website & make PDF document

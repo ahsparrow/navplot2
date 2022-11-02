@@ -22,7 +22,7 @@ import pkg_resources
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
-from reportlab.lib.colors import darkgray, gray, blue, black
+from reportlab.lib.colors import darkgray, gray, blue, black, steelblue
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, XPreformatted, Paragraph
 from reportlab.platypus import PageBreak, KeepTogether
@@ -62,14 +62,15 @@ class LinkedXPreformatted(XPreformatted):
 # Reportlab Platypus template
 
 class DocTemplate(SimpleDocTemplate):
-    def __init__(self, filename, dateStr, notams, mapinfo, mapdata, **kw):
+    def __init__(self, filename, dateStr, notams, mapinfo, airspace_json, coast_json, **kw):
         SimpleDocTemplate.__init__(self, filename, **kw)
         self.lat0 = mapinfo[0]
         self.lon0 = mapinfo[1]
         self.notams = notams
         self.dateStr = dateStr
         self.bottomOffset = 5*mm
-        self.map_data = mapdata
+        self.coast_json = coast_json
+        self.airspace_json = airspace_json
 
         self.mapwidth = self.pagesize[0]-self.rightMargin-self.leftMargin
         self.mapheight = self.pagesize[1]-self.bottomMargin-self.topMargin-\
@@ -105,8 +106,6 @@ def drawFirstPage(canvas, doc):
     canvas.setFont('Helvetica', 10)
     canvas.drawString(doc.leftMargin, doc.bottomMargin,
                       "THIS IS AN UNOFFICAL BRIEFING. Use at your own risk.")
-    #canvas.drawRightString(doc.pagesize[0] - doc.rightMargin, doc.bottomMargin,
-    #                       "Data \N{COPYRIGHT SIGN} NATS Ltd.")
 
     # Clipping rectangle for the map
     path = canvas.beginPath()
@@ -118,25 +117,28 @@ def drawFirstPage(canvas, doc):
     canvas.setLineWidth(0.5)
     canvas.setFillColor(gray)
 
-    # Draw the other map stuff. Coordinate file must be in mapinfo format.
-    # Coast line from http://rimmer.ngdc.noaa.gov/mgg/coast/getcoast.html
-    moveFlag = True
+    # Draw coast line
     path = canvas.beginPath()
 
-    map_data = doc.map_data
-    for lin in map_data.splitlines():
-        try:
-            lon, lat = map(float, lin.split())
-        except:
-            moveFlag = True
-            continue
+    for f in doc.coast_json["features"]:
+        coast = [doc.latlon2xy(x[1], x[0]) for x  in f["geometry"]["coordinates"][0]]
 
-        x, y = doc.latlon2xy(lat, lon)
-        if moveFlag:
-            path.moveTo(x, y)
-            moveFlag = False
-        else:
-            path.lineTo(x, y)
+        path.moveTo(coast[0][0], coast[0][1])
+        for xy in coast[1:]:
+            path.lineTo(xy[0], xy[1])
+
+    canvas.setStrokeColor(steelblue)
+    canvas.drawPath(path)
+
+    # Draw airspace
+    path = canvas.beginPath()
+
+    for f in doc.airspace_json["features"]:
+        coast = [doc.latlon2xy(x[1], x[0]) for x  in f["geometry"]["coordinates"][0]]
+
+        path.moveTo(coast[0][0], coast[0][1])
+        for xy in coast[1:]:
+            path.lineTo(xy[0], xy[1])
 
     canvas.setStrokeColor(darkgray)
     canvas.drawPath(path)
@@ -175,13 +177,13 @@ def drawFirstPage(canvas, doc):
 #------------------------------------------------------------------------------
 # Produce NOTAM document
 def format_doc(filename, local_notams, area_notams, boring_notams,
-               local_coords, header, date, mapinfo, mapdata):
+               local_coords, header, date, mapinfo, airspace_json, coast_json):
 
     date_str = date.strftime('%a, %d %b %y')
 
     # Define Platypus template and paragraph styles
     doc = DocTemplate(filename, date_str, local_coords, mapinfo,
-                      mapdata,
+                      airspace_json, coast_json,
                       leftMargin=LEFT_MARGIN,
                       rightMargin=RIGHT_MARGIN,
                       bottomMargin=BOTTOM_MARGIN,
@@ -245,7 +247,7 @@ def format_doc(filename, local_notams, area_notams, boring_notams,
     doc.build(story, onFirstPage=drawFirstPage)
 
 #------------------------------------------------------------------------------
-def notamdoc(filename, notams, header, date, mapinfo, mapdata):
+def notamdoc(filename, notams, header, date, mapinfo, airspace_json, coast_json):
     # Sort by latitude of area centre
     notams.sort(key=lambda x: int(x['qline']['centre'][:4]))
 
@@ -297,4 +299,4 @@ def notamdoc(filename, notams, header, date, mapinfo, mapdata):
             boring_notams.append(notam_text)
 
     format_doc(filename, interesting_notams, area_notams, boring_notams,
-               interesting_coords, header, date, mapinfo, mapdata)
+               interesting_coords, header, date, mapinfo, airspace_json, coast_json)
