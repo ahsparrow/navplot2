@@ -48,6 +48,8 @@ jobs:
 
       - name: Upload artifacts
         uses: actions/upload-pages-artifact@v1
+        with:
+          retention-days: 7
 
       - name: Deploy to GitHub Pages
         id: deployment
