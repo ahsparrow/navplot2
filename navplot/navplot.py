@@ -92,7 +92,7 @@ def parse_soup(soup):
 
 #-----------------------------------------------------------------------
 # Get XML data from contingency bulletin website
-def get_notams(username, password):
+def get_notams(username, password, date):
     browser = mechanicalsoup.StatefulBrowser(soup_config={'features': "lxml"})
     now = datetime.datetime.utcnow()
 
@@ -118,9 +118,9 @@ def get_notams(username, password):
 
     # Set start/end times
     browser.select_form('form[id="mainPage:mainForm"]')
-    browser["mainPage:mainForm:startDateSelected:startDateSelected_date"] = f"{now:%d/%m/%Y}"
+    browser["mainPage:mainForm:startDateSelected:startDateSelected_date"] = f"{date:%d/%m/%Y}"
     browser["mainPage:mainForm:startDateSelected:startDateSelected_time"] = "00:00"
-    browser["mainPage:mainForm:endDateSelected:endDateSelected_date"] = f"{now + datetime.timedelta(days=1):%d/%m/%Y}"
+    browser["mainPage:mainForm:endDateSelected:endDateSelected_date"] = f"{date:%d/%m/%Y}"
     browser["mainPage:mainForm:endDateSelected:endDateSelected_time"] = "23:59"
     response = browser.submit_selected("mainPage:mainForm:pibgenerate")
 
@@ -129,6 +129,7 @@ def get_notams(username, password):
     # Get header text
     hdr = response.soup.find("div", class_="uibs-pib-result-header").get_text()
     hdr_text = "\n".join([h.strip() for h in hdr.splitlines() if h.strip()])
+    print(hdr_text)
 
     return notams
 
@@ -153,7 +154,7 @@ def make_briefing(filename, notams, date, map_extent):
 #-----------------------------------------------------------------------
 # Get NOTAMS from NATS website and make PDF document
 def navplot(username, password, filename, date, map_extent):
-    notams = get_notams(username, password)
+    notams = get_notams(username, password, date)
 
     try:
         make_briefing(filename, notams, date, map_extent)
