@@ -129,18 +129,12 @@ def get_notams(username, password, date):
     # Get header text
     hdr = response.soup.find("div", class_="uibs-pib-result-header").get_text()
     hdr_text = "\n".join([h.strip() for h in hdr.splitlines() if h.strip()])
-    print(hdr_text)
 
-    return notams
+    return notams, hdr
 
 #-----------------------------------------------------------------------
 # Create NOTAM briefing
-def make_briefing(filename, notams, date, map_extent):
-    hdr = "UK AIS - BULLETIN\n"
-    #hdr += f"Data source: {NOTAM_URL}\n"
-    #hdr += f"Issued: {soup.AreaPIBHeader.Issued.string}\n"
-    #hdr += f"Created: {datetime.now().isoformat()[:19]}"
-
+def make_briefing(filename, notams, hdr, date, map_extent):
     # Get map data
     with open(resource_filename(__name__, "data/yaixm.geojson")) as f:
         airspace_json = json.load(f)
@@ -154,10 +148,10 @@ def make_briefing(filename, notams, date, map_extent):
 #-----------------------------------------------------------------------
 # Get NOTAMS from NATS website and make PDF document
 def navplot(username, password, filename, date, map_extent):
-    notams = get_notams(username, password, date)
+    notams, hdr = get_notams(username, password, date)
 
     try:
-        make_briefing(filename, notams, date, map_extent)
+        make_briefing(filename, notams, hdr, date, map_extent)
     except e:
         print(e)
         print(notam_soup.prettify())
