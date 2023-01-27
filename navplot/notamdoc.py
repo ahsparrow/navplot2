@@ -282,7 +282,7 @@ def notamdoc(filename, notams, header, date, mapinfo, airspace_json, coast_json)
             (qc[1]=='W' and qc[2] in 'ABGMPR') or
             (qc[1]=='A' and qc[2] in 'CERTZ' and qc[3:5] in ['CA', 'CS'])):
 
-            if int(n['qline']['radius']) > 30:
+            if int(n['qline']['radius']) > 30 and qc[1:3] != "RT":
                 area_notams.append(notam_text)
             else:
                 interesting_notams.append(notam_text)
