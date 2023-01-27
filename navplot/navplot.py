@@ -93,7 +93,7 @@ def parse_soup(soup):
 #-----------------------------------------------------------------------
 # Get NOTAM data from NATS briefing website
 def get_notams(username, password, date_from, date_to):
-    browser = mechanicalsoup.StatefulBrowser(soup_config={'features': "lxml"})
+    browser = mechanicalsoup.StatefulBrowser()
     now = datetime.datetime.utcnow()
 
     # Log in
