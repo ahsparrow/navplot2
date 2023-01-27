@@ -91,8 +91,8 @@ def parse_soup(soup):
     return list(notam_dict.values())
 
 #-----------------------------------------------------------------------
-# Get XML data from contingency bulletin website
-def get_notams(username, password, date):
+# Get NOTAM data from NATS briefing website
+def get_notams(username, password, date_from, date_to):
     browser = mechanicalsoup.StatefulBrowser(soup_config={'features': "lxml"})
     now = datetime.datetime.utcnow()
 
@@ -118,9 +118,9 @@ def get_notams(username, password, date):
 
     # Set start/end times
     browser.select_form('form[id="mainPage:mainForm"]')
-    browser["mainPage:mainForm:startDateSelected:startDateSelected_date"] = f"{date:%d/%m/%Y}"
+    browser["mainPage:mainForm:startDateSelected:startDateSelected_date"] = f"{date_from:%d/%m/%Y}"
     browser["mainPage:mainForm:startDateSelected:startDateSelected_time"] = "00:00"
-    browser["mainPage:mainForm:endDateSelected:endDateSelected_date"] = f"{date:%d/%m/%Y}"
+    browser["mainPage:mainForm:endDateSelected:endDateSelected_date"] = f"{date_to:%d/%m/%Y}"
     browser["mainPage:mainForm:endDateSelected:endDateSelected_time"] = "23:59"
     response = browser.submit_selected("mainPage:mainForm:pibgenerate")
 
@@ -133,8 +133,21 @@ def get_notams(username, password, date):
     return notams, hdr
 
 #-----------------------------------------------------------------------
+# Filter by date
+def date_filter(notam, date):
+    if date < notam['from'].date():
+        return False
+    elif 'to' not in notam:
+        return True
+    else:
+        return date <= notam['to'].date()
+
+#-----------------------------------------------------------------------
 # Create NOTAM briefing
 def make_briefing(filename, notams, hdr, date, map_extent):
+    # filter by date
+    notams = [n for n in notams if date_filter(n, date)]
+
     # Get map data
     with open(resource_filename(__name__, "data/yaixm.geojson")) as f:
         airspace_json = json.load(f)
@@ -148,10 +161,5 @@ def make_briefing(filename, notams, hdr, date, map_extent):
 #-----------------------------------------------------------------------
 # Get NOTAMS from NATS website and make PDF document
 def navplot(username, password, filename, date, map_extent):
-    notams, hdr = get_notams(username, password, date)
-
-    try:
-        make_briefing(filename, notams, hdr, date, map_extent)
-    except e:
-        print(e)
-        print(notam_soup.prettify())
+    notams, hdr = get_notams(username, password, date, date)
+    make_briefing(filename, notams, hdr, date, map_extent)

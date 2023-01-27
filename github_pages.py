@@ -31,49 +31,33 @@ NORTH_EXTENTS = (53.0, -6.0, 6.0)
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("directory", help="output directory")
+    parser.add_argument("--user", "-u", help="NATS AIP username")
+    parser.add_argument("--password", "-p", help="NATS AIP password")
     args = parser.parse_args()
 
-    now = datetime.datetime.utcnow().replace(microsecond=0)
+    today = datetime.datetime.utcnow().date()
+    tomorrow = today + datetime.timedelta(days=1)
 
-    notam_soup = get_notams()
-    date = now.date()
+    notams, hdr = get_notams(args.user, args.password, today, tomorrow)
 
     # Today's NOTAMs
     buf = io.BytesIO()
-    try:
-        make_briefing(buf, notam_soup, date, SOUTH_EXTENTS)
-    except:
-        print(notam_soup)
-        sys.exit(1)
+    make_briefing(buf, notams, hdr, today, SOUTH_EXTENTS)
     with open(os.path.join(args.directory, "today_south.pdf"), "wb") as f:
         f.write(buf.getbuffer())
 
     buf = io.BytesIO()
-    try:
-        make_briefing(buf, notam_soup, date, NORTH_EXTENTS)
-    except:
-        print(notam_soup)
-        sys.exit(1)
+    make_briefing(buf, notams, hdr, today, NORTH_EXTENTS)
     with open(os.path.join(args.directory, "today_north.pdf"), "wb") as f:
         f.write(buf.getbuffer())
 
     # Tomorrow's NOTAMs
-    date += datetime.timedelta(days=1)
-
     buf = io.BytesIO()
-    try:
-        make_briefing(buf, notam_soup, date, SOUTH_EXTENTS)
-    except:
-        print(notam_soup)
-        sys.exit(1)
+    make_briefing(buf, notams, hdr, tomorrow, SOUTH_EXTENTS)
     with open(os.path.join(args.directory, "tomorrow_south.pdf"), "wb") as f:
         f.write(buf.getbuffer())
 
     buf = io.BytesIO()
-    try:
-        make_briefing(buf, notam_soup, date, NORTH_EXTENTS)
-    except:
-        print(notam_soup)
-        sys.exit(1)
+    make_briefing(buf, notams, hdr, tomorrow, NORTH_EXTENTS)
     with open(os.path.join(args.directory, "tomorrow_north.pdf"), "wb") as f:
         f.write(buf.getbuffer())
