@@ -42,12 +42,9 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Create NOTAM PDFs
-        with:
-          username: ${{ secrets.NATS_USERNAME }}
-          password: ${{ secrets.NATS_PASSWORD }}
         run: |
           mkdir _site
-          python github_pages.py _site -u "$username" -p "$password"
+          python github_pages.py _site -u "${{ secrets.NATS_USERNAME }}" -p "${{ secrets.NATS_PASSWORD }}"
 
       - name: Upload artifacts
         uses: actions/upload-pages-artifact@v1
