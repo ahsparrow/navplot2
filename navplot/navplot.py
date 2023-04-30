@@ -144,7 +144,7 @@ def date_filter(notam, date):
 
 #-----------------------------------------------------------------------
 # Create NOTAM briefing
-def make_briefing(filename, notams, hdr, date, map_extent):
+def make_briefing(filename, notams, hdr, date, map_extent, debug=False):
     # filter by date
     notams = [n for n in notams if date_filter(n, date)]
 
@@ -156,10 +156,10 @@ def make_briefing(filename, notams, hdr, date, map_extent):
         coast_json = json.load(f)
 
     # Create PDF document
-    notamdoc.notamdoc(filename, notams, hdr, date, map_extent, airspace_json, coast_json)
+    notamdoc.notamdoc(filename, notams, hdr, date, map_extent, airspace_json, coast_json, debug)
 
 #-----------------------------------------------------------------------
 # Get NOTAMS from NATS website and make PDF document
-def navplot(username, password, filename, date, map_extent):
+def navplot(username, password, filename, date, map_extent, debug=False):
     notams, hdr = get_notams(username, password, date, date)
-    make_briefing(filename, notams, hdr, date, map_extent)
+    make_briefing(filename, notams, hdr, date, map_extent, debug)

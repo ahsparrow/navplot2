@@ -247,7 +247,7 @@ def format_doc(filename, local_notams, area_notams, boring_notams,
     doc.build(story, onFirstPage=drawFirstPage)
 
 #------------------------------------------------------------------------------
-def notamdoc(filename, notams, header, date, mapinfo, airspace_json, coast_json):
+def notamdoc(filename, notams, header, date, mapinfo, airspace_json, coast_json, debug=False):
     # Sort by latitude of area centre
     notams.sort(key=lambda x: int(x['qline']['centre'][:4]))
 
@@ -275,6 +275,9 @@ def notamdoc(filename, notams, header, date, mapinfo, airspace_json, coast_json)
 
         if 'schedule' in n:
             notam_text += "\nSCHEDULE: %s" % n['schedule']
+
+        if debug:
+            notam_text += f"\nQCODE: {n['qline']['qcode']}"
 
         # Sort into interesting, area & boring categories
         qc = n['qline']['qcode']

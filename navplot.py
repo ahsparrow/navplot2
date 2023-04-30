@@ -40,6 +40,8 @@ def navplot_cli():
                        help="Plot South of country (default)")
     group.add_argument("--north", action="store_true",
                        help="Plot North of country")
+    parser.add_argument("--debug", action="store_true",
+                       help="Print QCODE text")
     args = parser.parse_args()
 
     # Use with UTC times/dates
@@ -49,7 +51,7 @@ def navplot_cli():
 
     mapscale = NORTH if args.north else SOUTH
 
-    navplot(args.user, args.password, args.pdf_filename, date, mapscale)
+    navplot(args.user, args.password, args.pdf_filename, date, mapscale, args.debug)
 
 if __name__ == "__main__":
     navplot_cli()
