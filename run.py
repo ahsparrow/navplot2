@@ -59,23 +59,23 @@ if __name__ == "__main__":
     make_briefing(buf, notams, hdr, today, SOUTH_EXTENTS)
     with open(tmpfile, "wb") as f:
         f.write(buf.getbuffer())
-    os.rename(tmpfile, os.path.join(args.directory, "south_today.pdf"))
+    os.rename(tmpfile, os.path.join(args.directory, "today_south.pdf"))
 
     buf = io.BytesIO()
     make_briefing(buf, notams, hdr, today, NORTH_EXTENTS)
     with open(tmpfile, "wb") as f:
         f.write(buf.getbuffer())
-    os.rename(tmpfile, os.path.join(args.directory, "north_today.pdf"))
+    os.rename(tmpfile, os.path.join(args.directory, "today_north.pdf"))
 
     # Tomorrow's NOTAMs
     buf = io.BytesIO()
     make_briefing(buf, notams, hdr, tomorrow, SOUTH_EXTENTS)
     with open(tmpfile, "wb") as f:
         f.write(buf.getbuffer())
-    os.rename(tmpfile, os.path.join(args.directory, "south_tomorrow.pdf"))
+    os.rename(tmpfile, os.path.join(args.directory, "tomorrow_south.pdf"))
 
     buf = io.BytesIO()
     make_briefing(buf, notams, hdr, tomorrow, NORTH_EXTENTS)
     with open(tmpfile, "wb") as f:
         f.write(buf.getbuffer())
-    os.rename(tmpfile, os.path.join(args.directory, "north_tomorrow.pdf"))
+    os.rename(tmpfile, os.path.join(args.directory, "tomorrow_north.pdf"))
