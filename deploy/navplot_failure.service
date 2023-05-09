@@ -1,0 +1,7 @@
+[Unit]
+Description=Navplot failure service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/ahs/navplot
+ExecStart=/home/ahs/navplot/venv/bin/python mailer.py

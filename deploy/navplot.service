@@ -1,0 +1,10 @@
+[Unit]
+Description=Navplot service
+OnFailure=navplot_failure.service
+
+[Service]
+Type=oneshot
+User=ahs
+Group=ahs
+WorkingDirectory=/home/ahs/navplot
+ExecStart=/home/ahs/navplot/venv/bin/python run.py /home/asselect/navplot
