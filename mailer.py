@@ -27,7 +27,7 @@ txt = result.stdout.decode("ascii", "ignore")
 
 msg = EmailMessage()
 msg.set_content(txt)
-msg["From"] = "alan@freeflight.org.uk"
+msg["From"] = "navplot@freeflight.org.uk"
 msg["To"] = "alan@freeflight.org.uk"
 msg["Subject"] = "Navplot Fail"
 
