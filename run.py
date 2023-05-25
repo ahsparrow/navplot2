@@ -19,6 +19,8 @@ import argparse
 import datetime
 import io
 import os
+import pathlib
+import shutil
 import sys
 
 from dotenv import load_dotenv
@@ -28,6 +30,31 @@ from navplot import get_notams, make_briefing
 # Map origin and scaling
 SOUTH_EXTENTS = (50.2, -5.0, 6.5)
 NORTH_EXTENTS = (53.0, -6.0, 6.0)
+
+
+# Rotate all files in directory. Files with a numeric suffix are renamed by
+# incrementing the suffix (upto maxfiles). Files without a numeric suffix are
+# copied and given a .1 suffix
+def rotate_all(dirname, maxfiles):
+    dir = pathlib.Path(dirname)
+    files = list(dir.glob("*"))
+
+    # Files with and without numeric suffix
+    numbered_files = filter(lambda f: f.suffix[1:].isdigit(), files)
+    unnumbered_files = filter(lambda f: not f.suffix[1:].isdigit(), files)
+
+    # Increment numbered files
+    sorted_files = sorted(numbered_files, key=lambda f: int(f.suffix[1:]), reverse=True)
+    for f in sorted_files:
+        n = int(f.suffix[1:])
+        if n < maxfiles:
+            f.rename(f.with_suffix(f".{n + 1}"))
+        else:
+            f.unlink()
+
+    # Copy unnumbered files to *.1
+    for f in unnumbered_files:
+        shutil.copy(f, f.with_suffix(f.suffix + ".1"))
 
 
 if __name__ == "__main__":
@@ -44,7 +71,14 @@ if __name__ == "__main__":
         help="NATS AIP password",
         default=os.environ.get("NATS_PASSWORD"),
     )
+    parser.add_argument(
+        "--archive", help="Number of old NOTAMS to archive", type=int, default=0
+    )
     args = parser.parse_args()
+
+    # Archive the old notams
+    if args.archive > 0:
+        rotate_all(args.directory, args.archive)
 
     today = datetime.datetime.utcnow().date()
     tomorrow = today + datetime.timedelta(days=1)

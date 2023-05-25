@@ -7,4 +7,4 @@ Type=oneshot
 User=ahs
 Group=ahs
 WorkingDirectory=/home/ahs/navplot
-ExecStart=/home/ahs/navplot/venv/bin/python run.py /home/asselect/navplot
+ExecStart=/home/ahs/navplot/venv/bin/python run.py --archive 20 /home/asselect/navplot
