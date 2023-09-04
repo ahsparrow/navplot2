@@ -202,7 +202,7 @@ def format_doc(filename, local_notams, area_notams, boring_notams,
 
     otherStyle = ParagraphStyle('Other',
                                 fontName='Helvetica', fontSize=9,
-                                bulletFontName='Symbol',
+                                bulletFontName='Helvetica-Bold',
                                 bulletFontSize=10,
                                 leftIndent=8*mm, spaceAfter=3*mm)
 
