@@ -215,7 +215,7 @@ def format_doc(filename, local_notams, area_notams, boring_notams,
     story.append(XPreformatted(h, otherStyle))
     story.append(Paragraph('<b>Plotted Navigation Warnings</b>', subStyle))
     story.append(Paragraph(
-        'Plotted Navigation Warnings are Restrictions of all types '\
+        'Plotted Navigation Warnings are Restrictions of all types except <i>Overflight</i>, '\
         'and Warnings of type: <i>Air Display</i>, <i>Aerobatics</i>, '\
         '<i>Glider Flying</i>, <i>Missile, Gun or Rocket Firing</i>, '\
         '<i>Parachute Dropping Area</i> and <i>Radioactive '\
@@ -281,7 +281,7 @@ def notamdoc(filename, notams, header, date, mapinfo, airspace_json, coast_json,
 
         # Sort into interesting, area & boring categories
         qc = n['qline']['qcode']
-        if ((qc[1]=='R') or
+        if ((qc[1]=='R' and qc[2] != 'O') or
             (qc[1]=='W' and qc[2] in 'ABGMPR') or
             (qc[1]=='A' and qc[2] in 'CERTZ' and qc[3:5] in ['CA', 'CS'])):
 
@@ -298,7 +298,7 @@ def notamdoc(filename, notams, header, date, mapinfo, airspace_json, coast_json,
                     lon = -lon
                 rad = int(n['qline']['radius'])
                 interesting_coords.append((lat, lon, rad))
-        elif qc[1]=='W':
+        elif qc[1]=='W' or qc[1:3]=="RO":
             boring_notams.append(notam_text)
 
     format_doc(filename, interesting_notams, area_notams, boring_notams,
