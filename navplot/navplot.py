@@ -118,10 +118,10 @@ def get_notams(username, password, date_from, date_to):
 
     # Set start/end times
     browser.select_form('form[id="mainPage:mainForm"]')
-    browser["mainPage:mainForm:startDateSelected:startDateSelected_date"] = f"{date_from:%d/%m/%Y}"
-    browser["mainPage:mainForm:startDateSelected:startDateSelected_time"] = "00:00"
-    browser["mainPage:mainForm:endDateSelected:endDateSelected_date"] = f"{date_to:%d/%m/%Y}"
-    browser["mainPage:mainForm:endDateSelected:endDateSelected_time"] = "23:59"
+    browser["mainPage:mainForm:startDateSelected:startDateSelected_date_input"] = f"{date_from:%Y-%m-%d}"
+    browser["mainPage:mainForm:startDateSelected:startDateSelected_time_input"] = "00:00"
+    browser["mainPage:mainForm:endDateSelected:endDateSelected_date_input"] = f"{date_to:%Y-%m-%d}"
+    browser["mainPage:mainForm:endDateSelected:endDateSelected_time_input"] = "23:59"
     response = browser.submit_selected("mainPage:mainForm:pibgenerate")
 
     notams = parse_soup(response.soup)
