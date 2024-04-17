@@ -20,7 +20,6 @@ import argparse
 import datetime
 import io
 import os
-import sys
 
 from navplot import get_notams, make_briefing
 
@@ -28,7 +27,7 @@ from navplot import get_notams, make_briefing
 SOUTH_EXTENTS = (50.2, -5.0, 6.5)
 NORTH_EXTENTS = (53.0, -6.0, 6.0)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("directory", help="output directory")
     parser.add_argument("--user", "-u", help="NATS AIP username")

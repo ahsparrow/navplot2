@@ -25,23 +25,21 @@ from navplot import navplot
 SOUTH = (50.2, -5.0, 6.5)
 NORTH = (53.0, -6.0, 6.0)
 
+
 def navplot_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument("pdf_filename")
     parser.add_argument("--user", "-u", help="NATS AIP username")
     parser.add_argument("--password", "-p", help="NATS AIP password")
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("--today", action="store_true",
-                       help="Today's NOTAMs (default)")
-    group.add_argument("--tomorrow", action="store_true",
-                       help="Tomorrow's NOTAMs")
+    group.add_argument("--today", action="store_true", help="Today's NOTAMs (default)")
+    group.add_argument("--tomorrow", action="store_true", help="Tomorrow's NOTAMs")
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("--south", action="store_true",
-                       help="Plot South of country (default)")
-    group.add_argument("--north", action="store_true",
-                       help="Plot North of country")
-    parser.add_argument("--debug", action="store_true",
-                       help="Print QCODE text")
+    group.add_argument(
+        "--south", action="store_true", help="Plot South of country (default)"
+    )
+    group.add_argument("--north", action="store_true", help="Plot North of country")
+    parser.add_argument("--debug", action="store_true", help="Print QCODE text")
     args = parser.parse_args()
 
     # Use with UTC times/dates
@@ -52,6 +50,7 @@ def navplot_cli():
     mapscale = NORTH if args.north else SOUTH
 
     navplot(args.user, args.password, args.pdf_filename, date, mapscale, args.debug)
+
 
 if __name__ == "__main__":
     navplot_cli()
