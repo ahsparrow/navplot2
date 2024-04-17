@@ -18,7 +18,7 @@
 import math
 
 from reportlab.lib.units import mm
-from reportlab.lib.colors import darkgray, gray, blue, black, steelblue
+from reportlab.lib.colors import darkgray, gray, lightgrey, blue, black, steelblue
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, XPreformatted, Paragraph
 from reportlab.platypus import PageBreak, KeepTogether
@@ -60,14 +60,12 @@ class LinkedXPreformatted(XPreformatted):
 # ------------------------------------------------------------------------------
 # Reportlab Platypus template
 class DocTemplate(SimpleDocTemplate):
-    def __init__(
-        self, filename, dateStr, notams, mapinfo, airspace_json, coast_json, **kw
-    ):
+    def __init__(self, filename, dt, notams, mapinfo, airspace_json, coast_json, **kw):
         SimpleDocTemplate.__init__(self, filename, **kw)
         self.lat0 = mapinfo[0]
         self.lon0 = mapinfo[1]
         self.notams = notams
-        self.dateStr = dateStr
+        self.date = dt
         self.bottomOffset = 5 * mm
         self.coast_json = coast_json
         self.airspace_json = airspace_json
@@ -104,7 +102,7 @@ def drawFirstPage(canvas, doc):
     tobj.setLeading(22)
     tobj.textLine("NavPlot")
     tobj.setFont("Helvetica", 16)
-    tobj.textLine("Navigation warnings for: %s" % doc.dateStr)
+    tobj.textLine("Navigation warnings for: %s" % doc.date.strftime("%a, %d %b %y"))
     canvas.drawText(tobj)
 
     # Small print
@@ -114,6 +112,18 @@ def drawFirstPage(canvas, doc):
         doc.bottomMargin,
         "THIS IS AN UNOFFICAL BRIEFING. Use at your own risk.",
     )
+
+    # Day overlay
+    canvas.saveState()
+    canvas.rotate(90)
+    canvas.setFont("Helvetica", 64)
+    canvas.setFillColor(lightgrey)
+    canvas.drawRightString(
+        doc.bottomMargin + doc.mapheight,
+        -(doc.leftMargin + doc.mapwidth - 20),
+        doc.date.strftime("%A"),
+    )
+    canvas.restoreState()
 
     # Clipping rectangle for the map
     path = canvas.beginPath()
@@ -201,12 +211,10 @@ def format_doc(
     airspace_json,
     coast_json,
 ):
-    date_str = date.strftime("%a, %d %b %y")
-
     # Define Platypus template and paragraph styles
     doc = DocTemplate(
         filename,
-        date_str,
+        date,
         local_coords,
         mapinfo,
         airspace_json,
