@@ -115,12 +115,11 @@ def drawFirstPage(canvas, doc):
 
     # Day overlay
     canvas.saveState()
-    canvas.rotate(90)
     canvas.setFont("Helvetica", 64)
     canvas.setFillColor(lightgrey)
     canvas.drawRightString(
-        doc.bottomMargin + doc.mapheight,
-        -(doc.leftMargin + doc.mapwidth - 20),
+        doc.pagesize[0] - doc.rightMargin,
+        doc.bottomMargin + doc.bottomOffset + 16,
         doc.date.strftime("%A"),
     )
     canvas.restoreState()
