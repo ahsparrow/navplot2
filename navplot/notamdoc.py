@@ -118,7 +118,12 @@ def drawFirstPage(canvas, doc):
     canvas.setFont("Helvetica", 64)
     canvas.setFillColor(lightgrey)
     canvas.drawRightString(
-        doc.pagesize[0] - doc.rightMargin,
+        doc.leftMargin + doc.mapwidth - 4,
+        doc.bottomMargin + doc.bottomOffset + doc.mapheight - 52,
+        doc.date.strftime("%A"),
+    )
+    canvas.drawString(
+        doc.leftMargin,
         doc.bottomMargin + doc.bottomOffset + 16,
         doc.date.strftime("%A"),
     )
