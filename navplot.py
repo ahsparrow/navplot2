@@ -43,7 +43,7 @@ def navplot_cli():
     args = parser.parse_args()
 
     # Use with UTC times/dates
-    date = datetime.datetime.utcnow().date()
+    date = datetime.datetime.now(datetime.UTC).date()
     if args.tomorrow:
         date += datetime.timedelta(1)
 
