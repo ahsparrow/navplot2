@@ -347,7 +347,11 @@ def notamdoc(
         # Sort into interesting, area & boring categories
         qc = n["qline"]["qcode"]
         if (
-            (qc[1] == "R" and qc[2] != "O")
+            (
+                qc[1] == "R"
+                and qc[2] != "O"
+                and "ACTIVEFORUASONLY" not in "".join(n["text"].split())
+            )
             or (qc[1] == "W" and qc[2] in "ABGMPR")
             or (qc[1] == "A" and qc[2] in "CERTZ" and qc[3:5] in ["CA", "CS"])
         ):
@@ -364,7 +368,7 @@ def notamdoc(
                     lon = -lon
                 rad = int(n["qline"]["radius"])
                 interesting_coords.append((lat, lon, rad))
-        elif qc[1] == "W" or qc[1:3] == "RO":
+        elif qc[1] in "RW":
             boring_notams.append(notam_text)
 
     format_doc(
