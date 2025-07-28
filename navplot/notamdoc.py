@@ -346,13 +346,14 @@ def notamdoc(
 
         # Sort into interesting, area & boring categories
         qc = n["qline"]["qcode"]
+        joined_text = "".join(n["text"].split())
         if (
             (
                 qc[1] == "R"
                 and qc[2] != "O"
-                and "ACTIVEFORUASONLY" not in "".join(n["text"].split())
-                and "INSTALLEDFORUASONLY" not in "".join(n["text"].split())
-                and "APPLICABLETOUASONLY" not in "".join(n["text"].split())
+                and "ACTIVEFORUASONLY" not in joined_text
+                and "INSTALLEDFORUASONLY" not in joined_text
+                and "APPLICABLETOUASONLY" not in joined_text
             )
             or (qc[1] == "W" and qc[2] in "ABGMPR")
             or (qc[1] == "A" and qc[2] in "CERTZ" and qc[3:5] in ["CA", "CS"])
