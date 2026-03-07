@@ -357,6 +357,7 @@ def notamdoc(
             )
             or (qc[1] == "W" and qc[2] in "ABGMPR")
             or (qc[1] == "A" and qc[2] in "CERTZ" and qc[3:5] in ["CA", "CS"])
+            or (qc[1:5] == "AFXX")
         ):
             if int(n["qline"]["radius"]) > 30 and qc[1:3] != "RT":
                 area_notams.append(notam_text)
