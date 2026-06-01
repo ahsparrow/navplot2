@@ -1,0 +1,15 @@
+[project]
+name = "NavPlot"
+version = "2.0.0"
+description = "NOTAM plotter"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "mechanicalsoup>=1.4.0",
+    "python-dotenv>=1.2.2",
+    "reportlab>=4.5.1",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.17,<0.12"]
+build-backend = "uv_build"

@@ -15,17 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with Navplot.  If not, see <http://www.gnu.org/licenses/>.
 
-
-from . import notamdoc
-
 import datetime
+from importlib.resources import files, as_file
 import json
 import re
 import warnings
 
 import mechanicalsoup
 import bs4
-from pkg_resources import resource_filename
+
+import navplot
+import navplot.notamdoc
+
 
 warnings.filterwarnings(action="ignore", category=bs4.XMLParsedAsHTMLWarning)
 
@@ -160,20 +161,17 @@ def make_briefing(filename, notams, hdr, date, map_extent, debug=False):
     notams = [n for n in notams if date_filter(n, date)]
 
     # Get map data
-    with open(resource_filename(__name__, "data/yaixm.geojson")) as f:
-        airspace_json = json.load(f)
+    source = files(navplot).joinpath("data/yaixm.geojson")
+    with as_file(source) as path:
+        with path.open() as f:
+            airspace_json = json.load(f)
 
-    with open(resource_filename(__name__, "data/coast.geojson")) as f:
-        coast_json = json.load(f)
+    source = files(navplot).joinpath("data/coast.geojson")
+    with as_file(source) as path:
+        with path.open() as f:
+            coast_json = json.load(f)
 
     # Create PDF document
-    notamdoc.notamdoc(
+    navplot.notamdoc.notamdoc(
         filename, notams, hdr, date, map_extent, airspace_json, coast_json, debug
     )
-
-
-# -----------------------------------------------------------------------
-# Get NOTAMS from NATS website and make PDF document
-def navplot(username, password, filename, date, map_extent, debug=False):
-    notams, hdr = get_notams(username, password, date, date)
-    make_briefing(filename, notams, hdr, date, map_extent, debug)

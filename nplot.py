@@ -19,7 +19,7 @@
 import argparse
 import datetime
 
-from navplot import navplot
+from navplot import get_notams, make_briefing
 
 # Map origin and scaling
 SOUTH = (50.2, -5.0, 6.5)
@@ -49,7 +49,8 @@ def navplot_cli():
 
     mapscale = NORTH if args.north else SOUTH
 
-    navplot(args.user, args.password, args.pdf_filename, date, mapscale, args.debug)
+    notams, hdr = get_notams(args.user, args.password, date, date)
+    make_briefing(args.pdf_filename, notams, hdr, date, mapscale, args.debug)
 
 
 if __name__ == "__main__":
