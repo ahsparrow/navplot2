@@ -2,20 +2,20 @@
 
 Generates a PDF NOTAM briefing.
 
-The app can be used standalone via the navplot.py script, or via GitHub pages
+The app can be used standalone via the nplot.py script, or via GitHub pages
 to serve PDFs from https://navplot.asselect.uk
 
 ## Development
 
-### GitHub Pages
+### Cloudflare worker
 
-In GitHub pages set Build and Deployment source to "GitHub Actions". (The
-GitHub workflow is defined in .github/workflows/navplot.yaml)
+1. Create Cloudflare worker linked to this repository, set build command to
+   uv run build.py build. Disable builds for non-production branches.
 
-The action is triggered via an external scheduler - see the navplot_scheduler
-project.
+2. Set build variables for NATS_USER and (encrypted) NATS_PASSWORD.
 
-### ASSelect
+3. Set domain name (navplot.asselect.uk)
 
-Set the download links in the ASSelect app to:
-    https://navplot.asselect.uk/today_south.pdf, etc.
+4. Create Deploy Hook. Manually trigger build using:
+
+    curl -X POST "<deploy_hook_url>"
