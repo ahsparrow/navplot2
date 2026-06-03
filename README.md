@@ -18,4 +18,4 @@ to serve PDFs from https://navplot.asselect.uk
 
 4. Create Deploy Hook. Manually trigger build using:
 
-    curl -X POST "<deploy_hook_url>"
+       curl -X POST "<deploy_hook_url>"
