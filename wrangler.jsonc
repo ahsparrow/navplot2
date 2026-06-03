@@ -1,0 +1,23 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "navplot_test",
+  "compatibility_date": "2026-06-03",
+
+  "workers_dev": false,
+  "preview_urls": false,
+
+  "route": "cloudy.freeflight.org.uk",
+
+  "vars": {
+    "NATS_USER": "ahsparrow"
+  },
+
+  "assets": {
+    "directory": "./build"
+  },
+
+  "build": {
+    "command": "uv run build.py build"
+  }
+}
+
