@@ -3,7 +3,7 @@ name = "NavPlot"
 version = "2.0.0"
 description = "NOTAM plotter"
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.13"
 dependencies = [
     "mechanicalsoup>=1.4.0",
     "python-dotenv>=1.2.2",
