@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "navplot_test",
+  "name": "navplot2",
   "compatibility_date": "2026-06-03",
 
   "workers_dev": false,
