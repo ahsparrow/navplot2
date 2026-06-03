@@ -6,18 +6,7 @@
   "workers_dev": false,
   "preview_urls": false,
 
-  "route": "cloudy.freeflight.org.uk",
-
-  "vars": {
-    "NATS_USER": "ahsparrow"
-  },
-
   "assets": {
     "directory": "./build"
-  },
-
-  "build": {
-    "command": "uv run build.py build"
   }
 }
-
