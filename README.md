@@ -2,8 +2,8 @@
 
 Generates a PDF NOTAM briefing.
 
-The app can be used standalone via the nplot.py script, or via GitHub pages
-to serve PDFs from https://navplot.asselect.uk
+The app can be used standalone via the nplot.py script, or via Cloudflare
+workers to serve PDFs from https://navplot.asselect.uk
 
 ## Development
 
