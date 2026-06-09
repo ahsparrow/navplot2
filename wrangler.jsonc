@@ -8,5 +8,22 @@
 
   "assets": {
     "directory": "./build"
+  },
+
+  "build": {
+    "command": "uv run build.py build",
+  },
+
+  "routes": [
+    {
+      "pattern": "navplot_test.asselect.uk",
+      "custom_domain": true,
+    }
+  ],
+
+  "secrets": {
+    "required": [
+      "NATS_USER", "NATS_PASSWORD", "DISCORD_WEB_HOOK"
+    ]
   }
 }

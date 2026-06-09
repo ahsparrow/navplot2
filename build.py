@@ -28,29 +28,11 @@ SOUTH_EXTENTS = (50.2, -5.0, 6.5)
 NORTH_EXTENTS = (53.0, -6.0, 6.0)
 
 
-if __name__ == "__main__":
-    load_dotenv()
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("directory", help="output directory")
-    parser.add_argument(
-        "--user", "-u", help="NATS AIP username", default=os.environ.get("NATS_USER")
-    )
-    parser.add_argument(
-        "--password",
-        "-p",
-        help="NATS AIP password",
-        default=os.environ.get("NATS_PASSWORD"),
-    )
-    parser.add_argument(
-        "--archive", help="Number of old NOTAMS to archive", type=int, default=0
-    )
-    args = parser.parse_args()
-
+def build(user, password):
     today = datetime.datetime.now(datetime.UTC).date()
     tomorrow = today + datetime.timedelta(days=1)
 
-    notams, hdr = get_notams(args.user, args.password, today, tomorrow)
+    notams, hdr = get_notams(user, password, today, tomorrow)
 
     # Today's NOTAMs
     make_briefing(
@@ -85,3 +67,33 @@ if __name__ == "__main__":
         tomorrow,
         NORTH_EXTENTS,
     )
+
+
+if __name__ == "__main__":
+    try:
+        load_dotenv()
+
+        parser = argparse.ArgumentParser()
+        parser.add_argument("directory", help="output directory")
+        parser.add_argument(
+            "--user",
+            "-u",
+            help="NATS AIP username",
+            default=os.environ.get("NATS_USER"),
+        )
+        parser.add_argument(
+            "--password",
+            "-p",
+            help="NATS AIP password",
+            default=os.environ.get("NATS_PASSWORD"),
+        )
+        args = parser.parse_args()
+
+        build(args.user, args.password)
+    except Exception:
+        import requests
+        import traceback
+
+        # Send failure message to Discord
+        tb = traceback.format_exc()
+        requests.post(os.environ.get("DISCORD_WEB_HOOK"), json={"content": tb})
