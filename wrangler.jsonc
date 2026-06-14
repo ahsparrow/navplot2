@@ -16,7 +16,7 @@
 
   "routes": [
     {
-      "pattern": "navplot-test.asselect.uk",
+      "pattern": "navplot.asselect.uk",
       "custom_domain": true,
     }
   ],
